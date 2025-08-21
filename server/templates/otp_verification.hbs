@@ -1,0 +1,281 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>OTP Verification</title>
+      <style>
+          body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #9face6);
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 2rem;
+    color: #222;
+    letter-spacing: 1px;
+}
+
+p {
+    text-align: center;
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+form {
+    width: 320px;
+    margin: 20px auto;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.7s ease-in-out;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 18px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 6px rgba(108, 99, 255, 0.4);
+}
+
+button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #6c63ff, #3a7bd5);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(90deg, #3a7bd5, #6c63ff);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Fade-in effect for form */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+      </style>
+  </head>
+  <body>
+      <h1>OTP Verification</h1>
+      <p>Please verify the OTP sent in your mail</p>
+      <form action="/verify-otp" method="post">
+          <label for="otp">Enter OTP:</label>
+          <input type="text" id="otp" name="otp" required>
+          <button type="submit">Verify</button>
+      </form>
+  </body>
+  </html>
+
+
+
+  <!--const express = require ("express")
+  const app = express()
+  const path = require("path")
+  const hbs = require("hbs")
+  const collection = require('./mongodbpro')
+  const bcrypt = require("bcrypt");
+  const saltRounds = 10;
+  const crypto = require('crypto');
+
+  function generateVerificationToken() {
+    const min = 100000; // Minimum 6-digit number
+    const max = 999999; // Maximum 6-digit number
+    const otp = Math.floor(Math.random() * (max - min + 1)) + min;
+    return otp.toString();
+  }
+
+
+  const templatePath=path.join(__dirname,'../templates')
+  const static_path=path.join(__dirname,"../publicproject")
+
+  app.use(express.static(static_path))
+  app.use(express.json())
+  app.set("view engine","hbs")
+  app.set("views",templatePath)
+  app.use(express.urlencoded({extended:false}))
+
+
+  app.get("/",(req,resp)=>{
+      resp.render("login")
+  })
+
+  app.get("/signup",(req,resp)=>{
+      resp.render("signup")
+  })
+
+  app.post("/signup", async (req, resp) => {
+    const plaintextPassword = req.body.password;
+
+    try {
+      const hashedPassword = await bcrypt.hash(plaintextPassword, saltRounds);
+      const otp= generateVerificationToken();
+
+      const data = {
+        name: req.body.name,
+        email: req.body.email,
+        password: hashedPassword,
+        Mobile: req.body.Mobile,
+        otp: otp, // Store the OTP
+        isVerified: false, // Initialize email verification status
+      };
+
+      await collection.insertMany([data]);
+
+      // Send the verification email
+      sendVerificationEmail(data.email, otp);
+      
+      resp.render("otp_verification", { email: data.email });
+      
+    } catch (error) {
+      console.error("Error:", error);
+      resp.status(500).send("Internal Server Error");
+    }
+  });
+
+      
+    const nodemailer = require('nodemailer');
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'ritesh4843@gmail.com',
+      pass: 'zmql nitt afmd lqjm',
+    },
+  });
+
+  function sendVerificationEmail(email, otp) {
+    const mailOptions = {
+      from: 'ritesh4843@gmail.com',
+      to: email,
+      subject: 'OTP Verification',
+      html: `
+    <p>Your OTP for email verification is:</p>
+    <p><strong>${otp}</strong></p>
+  `,
+
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log('Error sending email: ' + error);
+      } else {
+        console.log('Email sent: ' + info.messageId);
+      }
+    });
+  }
+
+
+  app.post("/verify-otp", async (req, resp) => {
+    const enteredOTP = req.body.otp;
+
+      try {
+          const user = await collection.findOne({ otp:enteredOTP });
+
+      if (user) {
+        if (user.isVerified) {
+          resp.send("Email is already verified"); // Email is already verified
+        } else {
+          // Verify the OTP if needed, e.g., compare with user.otp
+          // If OTP is valid, mark the user as verified and clear the OTP
+          if (user.otp === req.body.otp) {
+            await collection.updateOne(
+              { _id: user._id },
+              {
+                $set: {
+                  isVerified: true
+                },
+              }
+            );
+            resp.send("Email and OTP have been successfully verified."); // Send a success message
+          } else {
+            resp.send("Invalid OTP");
+          }
+        }
+      } else {
+        resp.send("Invalid OTP");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      resp.status(500).send("Internal Server Error");
+    }
+  });
+
+    
+    
+  
+      
+
+    
+
+    app.post("/login", async (req, resp) => {
+      try {
+        const user = await collection.findOne({ email: req.body.email });
+    
+        if (user) {
+          const isPasswordValid = await bcrypt.compare(
+            req.body.password,
+            user.password
+          );
+
+          
+    
+          if (isPasswordValid ) {
+            if (user.isVerified) {
+              // Password and OTP are valid, and email is verified, allow login
+              resp.render("home");
+            } else {
+              // Password and OTP are valid, but email is not verified, reject login
+              resp.send("Email is not verified. Please check your email for a verification link.");
+            }
+          } else {
+            // Password or OTP is invalid, reject login
+            resp.send("Wrong password ");
+          }
+        } else {
+          resp.send("User not found");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        resp.status(500).send("Internal Server Error");
+      }
+  });
+
+    
+
+  app.listen(3000,()=>{
+      console.log("port connected");
+  })
