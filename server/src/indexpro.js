@@ -36,14 +36,9 @@ app.get("/", (req, resp) => {
     resp.json({ message: "Backend API is running. Use React frontend for UI." });
 });
 
-app.get("/signup", (req, resp) => {
-    resp.json({ message: "Backend API is running. Use React frontend for UI." });
-});
-
 // API Routes for React frontend
 app.post("/api/signup", async (req, resp) => {
   const plaintextPassword = req.body.password;
-
   try {
     const hashedPassword = await bcrypt.hash(plaintextPassword, saltRounds);
     const otp= generateVerificationToken();
