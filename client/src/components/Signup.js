@@ -29,7 +29,7 @@ const Signup = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/signup', formData, {
+      const response = await axios.post('https://snapnotes-58sv.onrender.com/api/signup', formData, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -57,7 +57,7 @@ const Signup = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/verify-otp', { otp }, {
+      const response = await axios.post('https://snapnotes-58sv.onrender.com/api/verify-otp', { otp }, {
         headers: {
           'Content-Type': 'application/json'
         }

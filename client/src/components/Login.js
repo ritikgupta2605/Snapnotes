@@ -25,7 +25,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/login', formData, {
+      const response = await axios.post('https://snapnotes-58sv.onrender.com/api/login', formData, {
         headers: {
           'Content-Type': 'application/json'
         }
