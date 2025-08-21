@@ -178,6 +178,7 @@ app.post("/api/verify-otp", async (req, resp) => {
 
   
 
-app.listen(5000,()=>{
-    console.log("API listening on http://localhost:5000");
-})
+
+app.listen(PORT, () => {
+  console.log(`✅ API listening on port ${PORT}`);
+});

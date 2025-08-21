@@ -1,5 +1,9 @@
 const mongoose = require('mongoose')
-mongoose.connect("mongodb://0.0.0.0/Backend ")
+require('dotenv').config();
+
+const MONGO_URI = process.env.MONGO_URI || "mongodb://0.0.0.0/Backend";
+
+mongoose.connect(MONGO_URI)
 .then(()=>{
     console.log("mongodb connected");
 })
